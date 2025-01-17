@@ -1,0 +1,19 @@
+import os
+import subprocess
+from multiprocessing.pool import ThreadPool
+
+def ping_ip(ip):
+    """Pingează un IP și verifică dacă este activ."""
+    response = subprocess.run(['ping', '-c', '1', ip], stdout=subprocess.DEVNULL)
+    return ip if response.returncode == 0 else None
+
+def scan_network(network_prefix):
+    """Scanează toate IP-urile dintr-un subnet."""
+    ips = [f"{network_prefix}.{i}" for i in range(1, 255)]
+    with ThreadPool(50) as pool:
+        active_ips = pool.map(ping_ip, ips)
+    return [ip for ip in active_ips if ip]
+
+# Exemplu: Scanează IP-urile din rețeaua 192.168.1.0/24
+active_ips = scan_network('192.168.1')
+print("IP-uri active în rețea:", active_ips)
